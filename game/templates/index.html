@@ -23,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* Фоновое видео */
         #background-video {
             position: fixed;
             top: 0;
@@ -60,7 +59,7 @@
         .icon {
             width: 24px;
             height: 24px;
-            image-rendering: pixelated; /* Убирает интерполяцию */
+            image-rendering: pixelated;
             filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
         }
 
@@ -78,13 +77,12 @@
             background-image: url('static/chuch.png');
             background-size: contain;
             background-repeat: no-repeat;
-            image-rendering: pixelated; /* Убирает размытость */
-            filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.5));
+            image-rendering: pixelated;
             cursor: pointer;
             transition: transform 0.1s ease;
             position: absolute;
-            top: 38%;
-            left: 54%; /* Смещение чуть правее */
+            left: 55%;
+            top: 35%;
             transform: translate(-50%, -50%);
         }
 
@@ -106,7 +104,7 @@
             text-transform: uppercase;
             user-select: none;
             position: absolute;
-            top: 75%;
+            top: 60%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
@@ -118,39 +116,16 @@
         #leaderboard-button:active {
             transform: translate(-50%, -50%) scale(0.95);
         }
-
-        #leaderboard-button img {
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
-        }
-
-        @keyframes blin-up {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100vh); opacity: 0; }
-        }
-
-        .blin-up {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-image: url('static/bin.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
-            animation: blin-up 1s ease-out;
-        }
     </style>
 </head>
 <body>
-
-    <!-- Фоновое видео -->
     <video autoplay loop muted id="background-video">
         <source src="static/background.mp4" type="video/mp4">
     </video>
 
     <div class="top-bar">
         <div class="pancake-score">
+            <span id="username">Загрузка...</span>
             <span>СЧЕТ БЛИНОВ:</span>
             <span id="score">0</span>
             <img class="icon" src="static/bin.png" alt="Блин">
@@ -159,42 +134,69 @@
     </div>
 
     <div id="dummy"></div>
-
-    <button id="leaderboard-button">
-        <img src="static/prize.png" alt="Приз">
-        Рейтинг
-    </button>
+    <button id="leaderboard-button">Рейтинг</button>
 
     <script>
         const Telegram = window.Telegram.WebApp;
-        Telegram.expand(); // Разворачиваем мини-приложение
+        Telegram.expand();
         let score = 0;
+        let tapCount = 0;
         const scoreDisplay = document.getElementById('score');
         const dummy = document.getElementById('dummy');
         const leaderboardButton = document.getElementById('leaderboard-button');
-
+        const username = Telegram.initDataUnsafe?.user?.username || 'guest';
+    
+        async function fetchScore() {
+            try {
+                const response = await fetch(`/api/users/${username}`);
+                const data = await response.json();
+                score = data.score || 0;
+                updateScoreDisplay();
+            } catch (error) {
+                console.error('Ошибка загрузки счета:', error);
+            }
+        }
+    
+        async function updateScore() {
+            try {
+                await fetch(`/api/users/${username}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ score })
+                });
+            } catch (error) {
+                console.error('Ошибка обновления счета:', error);
+            }
+        }
+    
         function updateScoreDisplay() {
             requestAnimationFrame(() => { 
                 scoreDisplay.textContent = score; 
             });
         }
-
+    
         dummy.addEventListener('click', () => {
             score++;
+            tapCount++;
             updateScoreDisplay();
             dummy.classList.add('tapped');
             setTimeout(() => {
                 dummy.classList.remove('tapped');
             }, 100);
-
+    
             if (score % 100 === 0) {
                 launchBlinAnimation();
             }
+    
+            if (tapCount >= 10) {
+                tapCount = 0;
+                updateScore();
+            }
         });
-
+    
         function launchBlinAnimation() {
             const numBlins = Math.floor(Math.random() * 5) + 5; // 5-10 блинов
-
+    
             for (let i = 0; i < numBlins; i++) {
                 setTimeout(() => {
                     const blin = document.createElement('div');
@@ -202,18 +204,21 @@
                     blin.style.left = `${Math.random() * window.innerWidth}px`;
                     blin.style.bottom = '0px';
                     document.body.appendChild(blin);
-
+    
                     blin.addEventListener('animationend', () => {
                         blin.remove();
                     });
                 }, i * 100);
             }
         }
-
+    
+        leaderboardButton.innerHTML = `Рейтинг <img src="static/prize.png" alt="Приз" style="width: 20px; height: 20px; margin-left: 5px;">`;
         leaderboardButton.addEventListener('click', () => {
             alert('Рейтинг пока не реализован');
         });
+    
+        fetchScore();
     </script>
-
+    
 </body>
 </html>
