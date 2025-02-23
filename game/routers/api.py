@@ -17,9 +17,9 @@ router = APIRouter(prefix='/api')
 
 @router.get('/users/top')
 def get_top_users():
-    ordered_users = User.select().order_by(User.score.desc()).limit(10)
+    ranked_users = User.select().order_by(User.score.desc()).limit(10)
     result = [{'username': user.username, 'score': user.score}
-              for user in ordered_users]
+              for user in ranked_users]
     return result
 
 
