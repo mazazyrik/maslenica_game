@@ -17,9 +17,15 @@ router = APIRouter(prefix='/api')
 
 @router.get('/users/top')
 def get_top_users():
-    ranked_users = UserModel.select().order_by(UserModel.score.desc()).limit(10)
-    result = [{'username': user.username, 'score': user.score}
-              for user in ranked_users]
+    users = list(UserModel.select())
+    sorted_users = sorted(users, key=lambda user: user.score,
+                          reverse=True)
+
+    result = [
+        {"rank": i + 1, "username": user.username, "score": user.score}
+        for i, user in enumerate(sorted_users[:10])
+    ]
+
     return result
 
 
