@@ -17,12 +17,12 @@ router = APIRouter(prefix='/api')
 
 @router.get('/users/top')
 async def get_top_users():
-    users = UserModel.select().order_by(UserModel.score.desc())[:10]
-
-    ranked_users = [{'username': user.username, 'score': user.score}
-                    for user in users]
-
-    return ranked_users
+    users = UserModel.select()
+    sorted_users = sorted(
+        users, key=lambda user: user.score, reverse=True)[:10]
+    result = [{'username': user.username, 'score': user.score}
+              for user in sorted_users]
+    return result
 
 
 @router.post('/users')
