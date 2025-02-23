@@ -15,3 +15,8 @@ async def index(request: Request):
 @router.get('/leaderboard', response_class=HTMLResponse)
 async def leaderboard(request: Request):
     return templates.TemplateResponse('rate.html', {'request': request})
+
+
+@router.get('/settings', response_class=HTMLResponse)
+async def settings(request: Request):
+    return templates.TemplateResponse('settings.html', {'request': request})

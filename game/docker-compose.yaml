@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: maslenitsa_back
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge

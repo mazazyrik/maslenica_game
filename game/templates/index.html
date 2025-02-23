@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Счет Блинов</title>
+    <title>ЭМИТ Масленица</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @font-face {
-            font-family: 'PixelFont';
-            src: url('https://fonts.cdnfonts.com/s/73178/PressStart2P-vaV7.woff') format('woff');
+            font-family: 'HomeVideoFont';
+            src: url('static/HomeVideo-Regular.otf') format('otf'), url('static/HomeVideo-Regular.otf') format('otf');
         }
 
         body {
@@ -24,7 +24,6 @@
             position: relative;
         }
 
-        /* Фоновое видео */
         #background-video {
             position: fixed;
             top: 0;
@@ -141,7 +140,6 @@
             animation: blin-up 1s ease-out;
         }
 
-        /* Стиль для формы логина, аналогичный верхней панели */
         #nickname-form {
             display: none;
             position: fixed;
@@ -188,7 +186,6 @@
             background: #e0b060;
         }
 
-        /* Блокировка страницы, кроме формы */
         .overlay {
             position: fixed;
             top: 0;
@@ -250,7 +247,7 @@
             <span id="score">0</span>
             <img class="icon" src="static/bin.png" alt="Блин">
         </div>
-        <div class="settings"></div>
+        <a href="http://127.0.0.1:8000/settings" class="settings"></a>
     </div>
 
     <div id="dummy"></div>
@@ -261,18 +258,16 @@
     </button>
     
 
-    <!-- Форма логина -->
     <div id="nickname-form">
-        <label for="nickname">Ваш ник в телеграме:</label><br>
+        <label for="nickname">Ваш ник в телеграме (без @):</label><br>
         <input type="text" id="nickname" /><br>
         <button onclick="submitNickname()">Подтвердить</button>
     </div>
 
-    <!-- Оверлей, чтобы блокировать доступ к странице, но оставить форму активной -->
     <div id="overlay" class="overlay"></div>
 
     <div class="footer">
-        <span>BLBS CREW 2025</span>
+        <a href="https://github.com/mazazyrik/maslenica_game">BLBS CREW 2025 </a>
         <span class="separator">|</span>
         <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
     </div>
@@ -283,11 +278,11 @@
         Telegram.expand();
 
         let score = 0;
-        let clickCount = 0; // Счетчик кликов
-        let lastSentScore = 0; // Счет, отправленный на сервер
-        const sendInterval = 300; // Интервал (в миллисекундах) между отправками (по таймеру)
-        const clicksBeforeSend = 10; // Количество кликов перед отправкой данных
-        let timer = null; // Таймер для автоматической отправки данных
+        let clickCount = 0; 
+        let lastSentScore = 0; 
+        const sendInterval = 300; 
+        const clicksBeforeSend = 10; 
+        let timer = null; 
         const scoreDisplay = document.getElementById('score');
         const dummy = document.getElementById('dummy');
         const nicknameForm = document.getElementById('nickname-form');
@@ -297,17 +292,17 @@
         let username = localStorage.getItem('username');
         let userScore = 0;
 
-        // Если нет имени в локальном хранилище, запрашиваем его
+        
         if (!username) {
             nicknameForm.style.display = 'block';
-            overlay.style.display = 'block'; // Показываем оверлей
-            overlay.style.pointerEvents = 'auto'; // Оверлей теперь кликабельный
+            overlay.style.display = 'block'; 
+            overlay.style.pointerEvents = 'auto'; 
         } else {
-            overlay.style.display = 'none'; // Скрываем оверлей сразу, если пользователь вошел
-            fetchScore(username); // Загружаем счет, если ник уже есть
+            overlay.style.display = 'none'; 
+            fetchScore(username); 
         }
 
-        // Обработчик отправки ника
+        
         function submitNickname() {
             username = nicknameInput.value;
             if (username.trim()) {
@@ -315,7 +310,7 @@
             }
         }
 
-        // Создание пользователя через API
+        
         function createUser(username) {
             fetch(`http://127.0.0.1:8000/api/users`, {
                 method: 'POST',
@@ -330,15 +325,15 @@
             .then(data => {
                 localStorage.setItem('username', username);
                 nicknameForm.style.display = 'none';
-                overlay.style.display = 'none'; // Скрываем оверлей
-                fetchScore(username); // Загружаем счет пользователя
+                overlay.style.display = 'none'; 
+                fetchScore(username); 
             })
             .catch(error => {
                 console.error('Ошибка при создании пользователя:', error);
             });
         }
 
-        // Загрузка счета с API
+        
         function fetchScore(username) {
             fetch(`http://127.0.0.1:8000/api/users/${username}`, {
                 method: 'GET',
@@ -369,14 +364,12 @@
             });
         }
 
-        // Обновление отображаемого счета
         function updateScoreDisplay() {
             requestAnimationFrame(() => { 
                 scoreDisplay.textContent = score; 
             });
         }
 
-        // Обновление счета на сервере, если прошло достаточно времени или достигнут порог
         function updateScoreOnServer() {
             if (score !== lastSentScore) {
                 fetch(`http://127.0.0.1:8000/api/users/${username}`, {
@@ -398,14 +391,14 @@
             }
         }
 
-        // Слушатель клика для увеличения счета
+        
         dummy.addEventListener('click', () => {
             score++;
             clickCount++;
 
             if (clickCount >= clicksBeforeSend) {
                 updateScoreOnServer();
-                clickCount = 0; // Сбрасываем счетчик кликов после отправки
+                clickCount = 0; 
             }
 
             updateScoreDisplay();
@@ -418,7 +411,7 @@
                 launchBlinAnimation();
             }
 
-            // Автоматически отправляем данные через таймер, если кликов не было
+            
             if (timer === null) {
                 timer = setInterval(() => {
                     if (clickCount > 0) {
@@ -429,9 +422,9 @@
             }
         });
 
-        // Анимация блинов
+        
         function launchBlinAnimation() {
-            const numBlins = Math.floor(Math.random() * 5) + 5; // 5-10 блинов
+            const numBlins = Math.floor(Math.random() * 5) + 5; 
 
             for (let i = 0; i < numBlins; i++) {
                 const blin = document.createElement('div');

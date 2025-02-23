@@ -7,8 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @font-face {
-            font-family: 'PixelFont';
-            src: url('https://fonts.cdnfonts.com/s/73178/PressStart2P-vaV7.woff') format('woff');
+            font-family: 'HomeVideoFont';
+            src: url('static/HomeVideo-Regular.otf') format('otf'), url('static/HomeVideo-Regular.otf') format('otf');
         }
 
         body {
@@ -146,13 +146,13 @@
         <div class="pancake-score">
             <span>РЕЙТИНГ</span>
         </div>
-        <div class="settings"></div>
+        <a href="http://127.0.0.1:8000/settings" class="settings"></a>
     </div>
 
     <div class="leaderboard" id="leaderboard"></div>
 
     <div class="footer">
-        <span>BLBS CREW 2025</span>
+        <a href="https://github.com/mazazyrik/maslenica_game">BLBS CREW 2025 </a>
         <span class="separator">|</span>
         <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
     </div>
@@ -160,7 +160,7 @@
     <script>
         const leaderboardElement = document.getElementById('leaderboard');
 
-        // Функция для получения топ-10 пользователей
+    
         function fetchTopUsers() {
             fetch('http://127.0.0.1:8000/api/users/top')
                 .then(response => response.json())
@@ -176,9 +176,9 @@
                 });
         }
 
-        // Отображение списка пользователей
+        
         function displayLeaderboard(users) {
-            leaderboardElement.innerHTML = ''; // Очистить перед добавлением новых данных
+            leaderboardElement.innerHTML = ''; 
 
             users.forEach((user, index) => {
                 const userItem = document.createElement('div');
@@ -193,7 +193,7 @@
             });
         }
 
-        // Инициализация страницы
+        
         fetchTopUsers();
     </script>
 

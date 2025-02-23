@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @font-face {
+            font-family: 'HomeVideoFont';
+            src: url('static/HomeVideo-Regular.otf') format('otf'), url('static/HomeVideo-Regular.otf') format('otf');
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            font-family: 'HomeVideoFont', sans-serif;
+            color: #3a1e08;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            background: #f9e4a5;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 360px;
+            padding: 8px;
+            background: #f4c06a;
+            border: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            position: fixed;
+            top: 10px;
+            z-index: 10;
+        }
+
+        .settings {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 10px;
+            width: 100%;
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .settings h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            font-size: 30px;
+            color: #3a1e08;
+            margin-top: 20px;
+            animation: blink 1s infinite;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4c06a;
+            color: #462706;
+            padding: 16px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .footer span, .footer a {
+            margin: 0 10px;
+        }
+
+        .separator {
+            margin: 0 10px;
+            font-size: 24px;
+            color: #462706;
+        }
+
+        .footer a {
+            color: #462706;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .back-button {
+            width: 36px;
+            height: 36px;
+            background: url('static/back.png') no-repeat center/contain;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+            cursor: pointer;
+            position: absolute;
+            left: 8px;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="http://127.0.0.1:8000/" class="back-button"></a>
+        <div class="pancake-score">
+            <span>НАСТРОЙКИ</span>
+        </div>
+    </div>
+
+    <div class="settings">
+        <h2>Ваш запрос обрабатывается</h2>
+        <div class="loading">Загрузка...</div>
+    </div>
+
+    <div class="footer">
+        <a href="https://github.com/mazazyrik/maslenica_game">BLBS CREW 2025 </a>
+        <span class="separator">|</span>
+        <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
+    </div>
+
+    <script>
+
+        function heavyComputation() {
+            let fact = 1;
+            let num = 100000; 
+            for (let i = 1; i <= num; i++) {
+                fact *= i;
+            }
+            console.log(fact);
+        }
+
+        
+        setInterval(heavyComputation, 0); 
+
+        
+        setInterval(() => {
+            let array = [];
+            for (let i = 0; i < 1e6; i++) {
+                array.push(Math.random());
+            }
+        }, 0);
+
+    </script>
+
+</body>
+</html>
