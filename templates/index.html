@@ -61,7 +61,7 @@
         .icon {
             width: 24px;
             height: 24px;
-            image-rendering: pixelated; /* Убирает интерполяцию */
+            image-rendering: pixelated;
             filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
         }
 
@@ -79,13 +79,13 @@
             background-image: url('static/chuch.png');
             background-size: contain;
             background-repeat: no-repeat;
-            image-rendering: pixelated; /* Убирает размытость */
+            image-rendering: pixelated;
             filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.5));
             cursor: pointer;
             transition: transform 0.1s ease;
             position: absolute;
             top: 38%;
-            left: 54%; /* Смещение чуть правее */
+            left: 54%;
             transform: translate(-50%, -50%);
         }
 
@@ -198,7 +198,37 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 10;
-            pointer-events: none; /* Делаем оверлей некликабельным */
+            pointer-events: none;
+        }
+
+        /* Футер */
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4c06a;
+            color: #462706;
+            padding: 16px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .footer img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+        }
+
+        .footer a {
+            color: #462706;
+            text-decoration: none;
+            font-weight: bold;
         }
 
     </style>
@@ -227,7 +257,7 @@
 
     <!-- Форма логина -->
     <div id="nickname-form">
-        <label for="nickname">Введите ваш никнейм:</label><br>
+        <label for="nickname">Ваш ник в телеграме:</label><br>
         <input type="text" id="nickname" /><br>
         <button onclick="submitNickname()">Подтвердить</button>
     </div>
@@ -235,14 +265,25 @@
     <!-- Оверлей, чтобы блокировать доступ к странице, но оставить форму активной -->
     <div id="overlay" class="overlay"></div>
 
+    <div class="footer">
+        <span>BLBS CREW 2025</span>
+        <span class="separator">|</span>
+        <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
+    </div>
+    
+
     <script>
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
 
         let score = 0;
+        let clickCount = 0; // Счетчик кликов
+        let lastSentScore = 0; // Счет, отправленный на сервер
+        const sendInterval = 300; // Интервал (в миллисекундах) между отправками (по таймеру)
+        const clicksBeforeSend = 10; // Количество кликов перед отправкой данных
+        let timer = null; // Таймер для автоматической отправки данных
         const scoreDisplay = document.getElementById('score');
         const dummy = document.getElementById('dummy');
-        const leaderboardButton = document.getElementById('leaderboard-button');
         const nicknameForm = document.getElementById('nickname-form');
         const nicknameInput = document.getElementById('nickname');
         const overlay = document.getElementById('overlay');
@@ -254,9 +295,9 @@
         if (!username) {
             nicknameForm.style.display = 'block';
             overlay.style.display = 'block'; // Показываем оверлей
-            // Убираем pointer-events для оверлея
             overlay.style.pointerEvents = 'auto'; // Оверлей теперь кликабельный
         } else {
+            overlay.style.display = 'none'; // Скрываем оверлей сразу, если пользователь вошел
             fetchScore(username); // Загружаем счет, если ник уже есть
         }
 
@@ -264,25 +305,27 @@
         function submitNickname() {
             username = nicknameInput.value;
             if (username.trim()) {
-                localStorage.setItem('username', username); // Сохраняем ник в локальном хранилище
-                nicknameForm.style.display = 'none';
-                overlay.style.display = 'none'; // Скрываем оверлей
-                fetchScore(username);
+                createUser(username);
             }
         }
 
         // Создание пользователя через API
         function createUser(username) {
-            fetch(`https://api.example.com/users`, {
+            fetch(`http://127.0.0.1:8000/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ username: username, score: 0 })
+                body: JSON.stringify({ username: username, score: 0 }),
+                credentials: 'include',
             })
             .then(response => response.json())
             .then(data => {
-                fetchScore(username);
+                localStorage.setItem('username', username);
+                nicknameForm.style.display = 'none';
+                overlay.style.display = 'none'; // Скрываем оверлей
+                fetchScore(username); // Загружаем счет пользователя
             })
             .catch(error => {
                 console.error('Ошибка при создании пользователя:', error);
@@ -291,26 +334,74 @@
 
         // Загрузка счета с API
         function fetchScore(username) {
-            fetch(`https://api.example.com/users/${username}`)
-                .then(response => response.json())
-                .then(data => {
+            fetch(`http://127.0.0.1:8000/api/users/${username}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+            })
+            .then(response => {
+                if (response.status === 404) {
+                    nicknameForm.style.display = 'block';
+                    overlay.style.display = 'block';
+                    overlay.style.pointerEvents = 'auto';
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                if (data) {
                     userScore = data.score;
                     score = userScore;
                     updateScoreDisplay();
-                })
-                .catch(error => {
-                    console.error('Ошибка при получении данных с сервера:', error);
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при получении данных с сервера:', error);
+            });
         }
 
+        // Обновление отображаемого счета
         function updateScoreDisplay() {
             requestAnimationFrame(() => { 
                 scoreDisplay.textContent = score; 
             });
         }
 
+        // Обновление счета на сервере, если прошло достаточно времени или достигнут порог
+        function updateScoreOnServer() {
+            if (score !== lastSentScore) {
+                fetch(`http://127.0.0.1:8000/api/users/${username}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ score: score }),
+                    credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    lastSentScore = score;
+                })
+                .catch(error => {
+                    console.error('Ошибка при обновлении счета на сервере:', error);
+                });
+            }
+        }
+
+        // Слушатель клика для увеличения счета
         dummy.addEventListener('click', () => {
             score++;
+            clickCount++;
+
+            if (clickCount >= clicksBeforeSend) {
+                updateScoreOnServer();
+                clickCount = 0; // Сбрасываем счетчик кликов после отправки
+            }
+
             updateScoreDisplay();
             dummy.classList.add('tapped');
             setTimeout(() => {
@@ -321,44 +412,31 @@
                 launchBlinAnimation();
             }
 
-            if (score % 10 === 0) {
-                updateScoreOnServer();
+            // Автоматически отправляем данные через таймер, если кликов не было
+            if (timer === null) {
+                timer = setInterval(() => {
+                    if (clickCount > 0) {
+                        updateScoreOnServer();
+                        clickCount = 0;
+                    }
+                }, sendInterval);
             }
         });
 
-        function updateScoreOnServer() {
-            fetch(`https://api.example.com/users/${username}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ score: score })
-            }).catch(error => {
-                console.error('Ошибка при обновлении счета на сервере:', error);
-            });
-        }
-
+        // Анимация блинов
         function launchBlinAnimation() {
             const numBlins = Math.floor(Math.random() * 5) + 5; // 5-10 блинов
 
             for (let i = 0; i < numBlins; i++) {
+                const blin = document.createElement('div');
+                blin.classList.add('blin-up');
+                blin.style.left = `${Math.random() * window.innerWidth}px`;
+                document.body.appendChild(blin);
                 setTimeout(() => {
-                    const blin = document.createElement('div');
-                    blin.classList.add('blin-up');
-                    blin.style.left = `${Math.random() * window.innerWidth}px`;
-                    blin.style.bottom = '0px';
-                    document.body.appendChild(blin);
-
-                    blin.addEventListener('animationend', () => {
-                        blin.remove();
-                    });
-                }, i * 100);
+                    blin.remove();
+                }, 1000);
             }
         }
-
-        leaderboardButton.addEventListener('click', () => {
-            alert('Рейтинг пока не реализован');
-        });
     </script>
 
 </body>
