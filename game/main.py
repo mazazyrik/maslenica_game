@@ -7,9 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title='Maslenica')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
+origins = [
+    "http://194.87.216.212:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
