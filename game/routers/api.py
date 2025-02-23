@@ -14,6 +14,10 @@ class Score(BaseModel):
 
 router = APIRouter(prefix='/api')
 
+@router.get('/users/top')
+async def get_top_users():
+    users = UserModel.select().order_by(UserModel.score.desc())[:10]
+    return [{'username': user.username, 'score': user.score} for user in users]
 
 @router.post('/users')
 async def create_user(user: User):
@@ -53,3 +57,5 @@ async def delete_user(username: str):
 async def get_users():
     users = UserModel.select()
     return [{'username': user.username, 'score': user.score} for user in users]
+
+

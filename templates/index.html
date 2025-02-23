@@ -80,12 +80,11 @@
             background-size: contain;
             background-repeat: no-repeat;
             image-rendering: pixelated;
-            filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.5));
             cursor: pointer;
             transition: transform 0.1s ease;
             position: absolute;
             top: 38%;
-            left: 54%;
+            left: 55%;
             transform: translate(-50%, -50%);
         }
 
@@ -201,7 +200,6 @@
             pointer-events: none;
         }
 
-        /* Футер */
         .footer {
             display: flex;
             justify-content: center;
@@ -218,17 +216,24 @@
             font-size: 16px;
         }
 
-        .footer img {
-            width: 24px;
-            height: 24px;
-            margin-right: 8px;
-            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+        .footer span, .footer a {
+            margin: 0 10px;
+        }
+
+        .separator {
+            margin: 0 10px;
+            font-size: 24px;
+            color: #462706;
         }
 
         .footer a {
             color: #462706;
             text-decoration: none;
             font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
         }
 
     </style>
@@ -250,10 +255,11 @@
 
     <div id="dummy"></div>
 
-    <button id="leaderboard-button">
+    <button id="leaderboard-button" onclick="window.location.href='http://127.0.0.1:8000/leaderboard'">
         <img src="static/prize.png" alt="Приз">
         Рейтинг
     </button>
+    
 
     <!-- Форма логина -->
     <div id="nickname-form">
