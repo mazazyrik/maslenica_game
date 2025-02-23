@@ -142,11 +142,11 @@
 <body>
 
     <div class="top-bar">
-        <a href="http://127.0.0.1:8000/" class="back-button"></a>
+        <a href="http://194.87.216.212:8000/" class="back-button"></a>
         <div class="pancake-score">
             <span>РЕЙТИНГ</span>
         </div>
-        <a href="http://127.0.0.1:8000/settings" class="settings"></a>
+        <a href="http://194.87.216.212:8000/settings" class="settings"></a>
     </div>
 
     <div class="leaderboard" id="leaderboard"></div>
@@ -162,7 +162,7 @@
 
     
         function fetchTopUsers() {
-            fetch('http://127.0.0.1:8000/api/users/top')
+            fetch('http://194.87.216.212:8000/api/users/top')
                 .then(response => response.json())
                 .then(data => {
                     if (Array.isArray(data)) {
