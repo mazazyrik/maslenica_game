@@ -8,11 +8,11 @@ app = FastAPI(title='Maslenica')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 origins = [
-    'https://education-marathon.ddns.net/',
+    'https://education-marathon.ddns.net',
     'http://194.87.216.212',
     'http://194.87.216.212:8000',
     'http://localhost:8000',
-    'https://education-marathon.ddns.net/',
+    'https://education-marathon.ddns.net',
 ]
 
 app.add_middleware(
