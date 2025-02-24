@@ -58,22 +58,6 @@
             margin-bottom: 20px;
         }
 
-        .loading-bar {
-            width: 100%;
-            max-width: 360px;
-            height: 10px;
-            background: #d3d3d3;
-            border-radius: 5px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .loading-bar .progress {
-            width: 0%;
-            height: 100%;
-            background: #f4c06a;
-        }
-
         .footer {
             display: flex;
             justify-content: center;
@@ -188,12 +172,54 @@
             background-color: #e0a047;
         }
 
+        .arrow-buttons {
+            position: absolute;
+            bottom: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+            display: none;
+        }
+
+        .arrow-buttons button {
+            width: 50px;
+            height: 50px;
+            background-color: #f4c06a;
+            border: 2px solid #a05a2c;
+            border-radius: 50%;
+            font-size: 24px;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .arrow-buttons button:hover {
+            background-color: #e0a047;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #f4c06a;
+            height: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            max-width: 360px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #a05a2c;
+            transition: width 0.1s ease-in-out;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <a href="https://education-marathon.ddns.net" class="back-button"></a>
+        <a href="https://education-marathon.ddns.net/" class="back-button"></a>
         <div class="pancake-score">
             <span>НАСТРОЙКИ</span>
         </div>
@@ -201,15 +227,17 @@
 
     <div class="settings">
         <h2>Ваш запрос обрабатывается</h2>
-        <div class="loading-bar">
-            <div class="progress" id="progress"></div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
         </div>
+
         <div class="message" id="message">Пока ваш запрос обрабатывается, вы можете поиграть в змейку.</div>
         <button class="start-button" id="startGameButton">Запустить игру</button>
         <canvas id="gameCanvas"></canvas>
         <div class="game-over" id="gameOverMessage">
             <p>Игра завершена! Все ваши блины списаны.</p>
-            <button onclick="window.location.href = 'https://education-marathon.ddns.net'">OK</button>
+            <button onclick="window.location.href = 'https://education-marathon.ddns.net/'">OK</button>
         </div>
     </div>
 
@@ -219,32 +247,36 @@
         <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
     </div>
 
+    <div class="arrow-buttons">
+        <button id="left">←</button>
+        <button id="up">↑</button>
+        <button id="right">→</button>
+        <button id="down">↓</button>
+    </div>
+
     <script>
-        
         let progress = 0;
-        const progressBar = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
         const message = document.getElementById('message');
         const startButton = document.getElementById('startGameButton');
         const canvas = document.getElementById("gameCanvas");
         const gameOverMessage = document.getElementById("gameOverMessage");
+        const arrowButtons = document.querySelector('.arrow-buttons');
 
-        
         function loadBar() {
             if (progress < 99) {
-                progress += 0.2; 
+                progress += 0.1;  // Уменьшаем шаг, чтобы она заполнилась медленно
                 progressBar.style.width = progress + "%";
             }
         }
 
-        setInterval(loadBar, 100);
+        setInterval(loadBar, 100);  // Задержка 100 мс для медленной анимации
 
-        
         setTimeout(() => {
             message.style.display = "block";
             startButton.style.display = "inline-block";
-        }, 5000);
+        }, 10000);  // Подождать 10 секунд перед отображением кнопки и сообщения
 
-        
         const ctx = canvas.getContext("2d");
         const box = 20;
         const canvasSize = 360;
@@ -256,25 +288,15 @@
         let direction = 'RIGHT';
         let gameStarted = false;
 
-        
         startButton.addEventListener('click', function() {
             startGame();
             canvas.style.display = "block";
-            startButton.style.display = "none"; 
-            message.style.display = "none"; 
-            canvas.style.opacity = 1; 
+            startButton.style.display = "none";
+            message.style.display = "none";
+            canvas.style.opacity = 1;
+            arrowButtons.style.display = "flex";
         });
 
-        
-        function restartGame() {
-            snake = [{x: 160, y: 160}];
-            food = {x: Math.floor(Math.random() * 17 + 1) * box, y: Math.floor(Math.random() * 15 + 3) * box};
-            direction = 'RIGHT';
-            gameStarted = true;
-            startGame();
-        }
-
-        
         function startGame() {
             function drawSnake() {
                 for (let i = 0; i < snake.length; i++) {
@@ -323,45 +345,34 @@
                 updateSnakePosition();
             }
 
-            function control(e) {
-                if (e.keyCode == 37 && direction != "RIGHT") direction = "LEFT";
-                if (e.keyCode == 38 && direction != "DOWN") direction = "UP";
-                if (e.keyCode == 39 && direction != "LEFT") direction = "RIGHT";
-                if (e.keyCode == 40 && direction != "UP") direction = "DOWN";
+            function moveLeft() {
+                if (direction !== "RIGHT") direction = "LEFT";
             }
 
-            
-            let startX, startY;
+            function moveUp() {
+                if (direction !== "DOWN") direction = "UP";
+            }
 
-            canvas.addEventListener('touchstart', function(e) {
-                const touch = e.touches[0];
-                startX = touch.pageX;
-                startY = touch.pageY;
-            });
+            function moveRight() {
+                if (direction !== "LEFT") direction = "RIGHT";
+            }
 
-            canvas.addEventListener('touchend', function(e) {
-                const touch = e.changedTouches[0];
-                const diffX = touch.pageX - startX;
-                const diffY = touch.pageY - startY;
+            function moveDown() {
+                if (direction !== "UP") direction = "DOWN";
+            }
 
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (diffX > 0 && direction != 'LEFT') direction = 'RIGHT';
-                    if (diffX < 0 && direction != 'RIGHT') direction = 'LEFT';
-                } else {
-                    if (diffY > 0 && direction != 'UP') direction = 'DOWN';
-                    if (diffY < 0 && direction != 'DOWN') direction = 'UP';
-                }
-            });
+            let gameInterval = setInterval(drawGame, 200);
 
-            let gameInterval = setInterval(drawGame, 100);
+            document.getElementById('left').onclick = moveLeft;
+            document.getElementById('up').onclick = moveUp;
+            document.getElementById('right').onclick = moveRight;
+            document.getElementById('down').onclick = moveDown;
         }
 
-        
         function gameOver() {
             gameOverMessage.style.display = "block";
-            canvas.style.display = "none"; 
+            canvas.style.display = "none";
         }
-
     </script>
 
 </body>
