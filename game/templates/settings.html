@@ -50,6 +50,7 @@
             height: calc(100vh - 160px);
             overflow-y: auto;
             text-align: center;
+            position: relative;
         }
 
         .settings h2 {
@@ -57,11 +58,20 @@
             margin-bottom: 20px;
         }
 
-        .loading {
-            font-size: 30px;
-            color: #3a1e08;
-            margin-top: 20px;
-            animation: blink 1s infinite;
+        .loading-bar {
+            width: 100%;
+            max-width: 360px;
+            height: 10px;
+            background: #d3d3d3;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar .progress {
+            width: 0%;
+            height: 100%;
+            background: #f4c06a;
         }
 
         .footer {
@@ -99,6 +109,7 @@
         .footer a:hover {
             text-decoration: underline;
         }
+
         .back-button {
             width: 36px;
             height: 36px;
@@ -109,10 +120,72 @@
             left: 8px;
         }
 
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
+        #gameCanvas {
+            background-color: #f9e4a5;
+            border: 2px solid #a05a2c;
+            position: absolute;
+            top: 100px;
+            width: 100%;
+            height: 80%;
+            max-width: 360px;
+            border-radius: 10px;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .start-button {
+            padding: 10px 20px;
+            background-color: #f4c06a;
+            color: #462706;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .start-button:hover {
+            background-color: #e0a047;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #462706;
+            display: none;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 15;
+        }
+
+        .game-over button {
+            padding: 10px 20px;
+            background-color: #f4c06a;
+            color: #462706;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .game-over button:hover {
+            background-color: #e0a047;
         }
 
     </style>
@@ -120,7 +193,7 @@
 <body>
 
     <div class="top-bar">
-        <a href="https://education-marathon.ddns.net" class="back-button"></a>
+        <a href="http://127.0.0.1:8000" class="back-button"></a>
         <div class="pancake-score">
             <span>НАСТРОЙКИ</span>
         </div>
@@ -128,7 +201,16 @@
 
     <div class="settings">
         <h2>Ваш запрос обрабатывается</h2>
-        <div class="loading">Загрузка...</div>
+        <div class="loading-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="message" id="message">Пока ваш запрос обрабатывается, вы можете поиграть в змейку.</div>
+        <button class="start-button" id="startGameButton">Запустить игру</button>
+        <canvas id="gameCanvas"></canvas>
+        <div class="game-over" id="gameOverMessage">
+            <p>Игра завершена! Все ваши блины списаны.</p>
+            <button onclick="window.location.href = 'http://127.0.0.1:8000'">OK</button>
+        </div>
     </div>
 
     <div class="footer">
@@ -138,26 +220,147 @@
     </div>
 
     <script>
+        
+        let progress = 0;
+        const progressBar = document.getElementById('progress');
+        const message = document.getElementById('message');
+        const startButton = document.getElementById('startGameButton');
+        const canvas = document.getElementById("gameCanvas");
+        const gameOverMessage = document.getElementById("gameOverMessage");
 
-        function heavyComputation() {
-            let fact = 1;
-            let num = 100000; 
-            for (let i = 1; i <= num; i++) {
-                fact *= i;
+        
+        function loadBar() {
+            if (progress < 99) {
+                progress += 0.2; 
+                progressBar.style.width = progress + "%";
             }
-            console.log(fact);
+        }
+
+        setInterval(loadBar, 100);
+
+        
+        setTimeout(() => {
+            message.style.display = "block";
+            startButton.style.display = "inline-block";
+        }, 5000);
+
+        
+        const ctx = canvas.getContext("2d");
+        const box = 20;
+        const canvasSize = 360;
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+
+        let snake = [{x: 160, y: 160}];
+        let food = {x: Math.floor(Math.random() * 17 + 1) * box, y: Math.floor(Math.random() * 15 + 3) * box};
+        let direction = 'RIGHT';
+        let gameStarted = false;
+
+        
+        startButton.addEventListener('click', function() {
+            startGame();
+            canvas.style.display = "block";
+            startButton.style.display = "none"; 
+            message.style.display = "none"; 
+            canvas.style.opacity = 1; 
+        });
+
+        
+        function restartGame() {
+            snake = [{x: 160, y: 160}];
+            food = {x: Math.floor(Math.random() * 17 + 1) * box, y: Math.floor(Math.random() * 15 + 3) * box};
+            direction = 'RIGHT';
+            gameStarted = true;
+            startGame();
         }
 
         
-        setInterval(heavyComputation, 0); 
+        function startGame() {
+            function drawSnake() {
+                for (let i = 0; i < snake.length; i++) {
+                    ctx.fillStyle = "#3a1e08";
+                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                }
+            }
+
+            function drawFood() {
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(food.x, food.y, box, box);
+            }
+
+            function updateSnakePosition() {
+                const head = {x: snake[0].x, y: snake[0].y};
+                if (direction == "LEFT") head.x -= box;
+                if (direction == "UP") head.y -= box;
+                if (direction == "RIGHT") head.x += box;
+                if (direction == "DOWN") head.y += box;
+
+                snake.unshift(head);
+                if (head.x == food.x && head.y == food.y) {
+                    food = {x: Math.floor(Math.random() * 17 + 1) * box, y: Math.floor(Math.random() * 15 + 3) * box};
+                } else {
+                    snake.pop();
+                }
+
+                if (collision(head)) {
+                    clearInterval(gameInterval);
+                    gameOver();
+                }
+            }
+
+            function collision(head) {
+                for (let i = 4; i < snake.length; i++) {
+                    if (head.x == snake[i].x && head.y == snake[i].y) return true;
+                }
+                if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) return true;
+                return false;
+            }
+
+            function drawGame() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawSnake();
+                drawFood();
+                updateSnakePosition();
+            }
+
+            function control(e) {
+                if (e.keyCode == 37 && direction != "RIGHT") direction = "LEFT";
+                if (e.keyCode == 38 && direction != "DOWN") direction = "UP";
+                if (e.keyCode == 39 && direction != "LEFT") direction = "RIGHT";
+                if (e.keyCode == 40 && direction != "UP") direction = "DOWN";
+            }
+
+            
+            let startX, startY;
+
+            canvas.addEventListener('touchstart', function(e) {
+                const touch = e.touches[0];
+                startX = touch.pageX;
+                startY = touch.pageY;
+            });
+
+            canvas.addEventListener('touchend', function(e) {
+                const touch = e.changedTouches[0];
+                const diffX = touch.pageX - startX;
+                const diffY = touch.pageY - startY;
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX > 0 && direction != 'LEFT') direction = 'RIGHT';
+                    if (diffX < 0 && direction != 'RIGHT') direction = 'LEFT';
+                } else {
+                    if (diffY > 0 && direction != 'UP') direction = 'DOWN';
+                    if (diffY < 0 && direction != 'DOWN') direction = 'UP';
+                }
+            });
+
+            let gameInterval = setInterval(drawGame, 100);
+        }
 
         
-        setInterval(() => {
-            let array = [];
-            for (let i = 0; i < 1e6; i++) {
-                array.push(Math.random());
-            }
-        }, 0);
+        function gameOver() {
+            gameOverMessage.style.display = "block";
+            canvas.style.display = "none"; 
+        }
 
     </script>
 
