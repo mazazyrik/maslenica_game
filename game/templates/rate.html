@@ -37,8 +37,9 @@
             box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
             text-transform: uppercase;
             position: fixed;
-            top: 10px;
+            top: 0;
             z-index: 10;
+            padding-top: 16px;
         }
 
         .back-button {
@@ -56,7 +57,7 @@
             align-items: center;
             gap: 8px;
             font-size: 18px;
-            margin-left: 44px; /* Отступ, чтобы не перекрывалось с кнопкой */
+            margin-left: 44px;
         }
 
         .settings {
@@ -76,9 +77,9 @@
             justify-content: center;
             padding: 80px 10px;
             width: 100%;
-            height: calc(100vh - 160px); /* Чтобы не перекрывать верхнюю панель и футер */
+            height: calc(100vh - 160px);
             overflow-y: auto;
-            margin-top: 50px;
+            margin-top: 60px;
         }
 
         .leaderboard-item {
@@ -93,12 +94,44 @@
             font-size: 18px;
             color: #462706;
             border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
         .leaderboard-item a {
             color: #462706;
             text-decoration: none;
             font-weight: bold;
+        }
+
+        .leaderboard-item.new-user {
+            animation: pulse 2s ease-in-out 2, pause 5s ease-in-out forwards;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.05);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pause {
+            0% {
+                animation-play-state: paused;
+            }
+            100% {
+                animation-play-state: running;
+            }
         }
 
         .footer {
@@ -142,11 +175,11 @@
 <body>
 
     <div class="top-bar">
-        <a href="https://education-marathon.ddns.net/" class="back-button"></a>
+        <a href="http://127.0.0.1:8000/" class="back-button"></a>
         <div class="pancake-score">
             <span>РЕЙТИНГ</span>
         </div>
-        <a href="https://education-marathon.ddns.net/settings" class="settings"></a>
+        <a href="http://127.0.0.1:8000/settings" class="settings"></a>
     </div>
 
     <div class="leaderboard" id="leaderboard"></div>
@@ -160,9 +193,8 @@
     <script>
         const leaderboardElement = document.getElementById('leaderboard');
 
-    
         function fetchTopUsers() {
-            fetch('https://education-marathon.ddns.net/api/users/top')
+            fetch('http://127.0.0.1:8000/api/users/top')
                 .then(response => response.json())
                 .then(data => {
                     if (Array.isArray(data)) {
@@ -176,16 +208,19 @@
                 });
         }
 
-        
         function displayLeaderboard(users) {
             leaderboardElement.innerHTML = ''; 
 
             users.forEach((user, index) => {
                 const userItem = document.createElement('div');
                 userItem.classList.add('leaderboard-item');
+                
+                if (index === 0) {
+                    userItem.classList.add('new-user');
+                }
 
                 userItem.innerHTML = `
-                    <span>${index + 1}. <a href="https://t.me/${user.username}" target="_blank">${user.username}</a></span>
+                    <span>${index}. <a href="https://t.me/${user.username}" target="_blank">${user.username}</a></span>
                     <div>Счет: ${user.score}</div>
                 `;
 
@@ -193,7 +228,6 @@
             });
         }
 
-        
         fetchTopUsers();
     </script>
 

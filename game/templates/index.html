@@ -125,8 +125,14 @@
         }
 
         @keyframes blin-up {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100vh); opacity: 0; }
+            0% {
+                transform: translateY(100vh) rotate(0deg); 
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg); 
+                opacity: 0;
+            }
         }
 
         .blin-up {
@@ -137,7 +143,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
-            animation: blin-up 1s ease-out;
+            animation: blin-up 2s ease-out forwards;
         }
 
         #nickname-form {
@@ -245,16 +251,15 @@
             <span id="score">0</span>
             <img class="icon" src="static/bin.png" alt="Блин">
         </div>
-        <a href="https://education-marathon.ddns.net/settings" class="settings"></a>
+        <a href="http://127.0.0.1:8000/settings" class="settings"></a>
     </div>
 
     <div id="dummy"></div>
 
-    <button id="leaderboard-button" onclick="window.location.href='https://education-marathon.ddns.net/leaderboard'">
+    <button id="leaderboard-button" onclick="window.location.href='http://127.0.0.1:8000/leaderboard'">
         <img src="static/prize.png" alt="Приз">
         Рейтинг
     </button>
-    
 
     <div id="nickname-form">
         <label for="nickname">Ваш ник в телеграме (без @):</label><br>
@@ -269,18 +274,17 @@
         <span class="separator">|</span>
         <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
     </div>
-    
 
     <script>
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
 
         let score = 0;
-        let clickCount = 0; 
-        let lastSentScore = 0; 
+        let clickCount = 0;
+        let lastSentScore = 0;
         const sendInterval = 300; 
         const clicksBeforeSend = 10; 
-        let timer = null; 
+        let timer = null;
         const scoreDisplay = document.getElementById('score');
         const dummy = document.getElementById('dummy');
         const nicknameForm = document.getElementById('nickname-form');
@@ -310,7 +314,7 @@
 
         
         function createUser(username) {
-            fetch(`https://education-marathon.ddns.net/api/users`, {
+            fetch(`http://127.0.0.1:8000/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -333,7 +337,7 @@
 
         
         function fetchScore(username) {
-            fetch(`https://education-marathon.ddns.net/api/users/${username}`, {
+            fetch(`http://127.0.0.1:8000/api/users/${username}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -370,7 +374,7 @@
 
         function updateScoreOnServer() {
             if (score !== lastSentScore) {
-                fetch(`https://education-marathon.ddns.net/api/users/${username}`, {
+                fetch(`http://127.0.0.1:8000/api/users/${username}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -396,7 +400,7 @@
 
             if (clickCount >= clicksBeforeSend) {
                 updateScoreOnServer();
-                clickCount = 0; 
+                clickCount = 0;
             }
 
             updateScoreDisplay();
@@ -406,7 +410,9 @@
             }, 100);
 
             if (score % 100 === 0) {
-                launchBlinAnimation();
+                launchMultipleBlins();
+            } else {
+                launchSingleBlin();
             }
 
             
@@ -421,8 +427,19 @@
         });
 
         
-        function launchBlinAnimation() {
-            const numBlins = Math.floor(Math.random() * 5) + 5; 
+        function launchSingleBlin() {
+            const blin = document.createElement('div');
+            blin.classList.add('blin-up');
+            blin.style.left = `${Math.random() * window.innerWidth}px`;
+            document.body.appendChild(blin);
+            setTimeout(() => {
+                blin.remove();
+            }, 2000);
+        }
+
+        
+        function launchMultipleBlins() {
+            const numBlins = Math.floor(Math.random() * 6) + 5; 
 
             for (let i = 0; i < numBlins; i++) {
                 const blin = document.createElement('div');
@@ -431,7 +448,7 @@
                 document.body.appendChild(blin);
                 setTimeout(() => {
                     blin.remove();
-                }, 1000);
+                }, 2000);
             }
         }
     </script>

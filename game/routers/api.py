@@ -20,12 +20,17 @@ def get_top_users():
     users = list(UserModel.select())
     sorted_users = sorted(users, key=lambda user: int(
         user.score), reverse=True)
+    balbes = {
+        "rank": 0,
+        "username": "balbescrew",
+        "score": 1337.228
+    }
 
     result = [
         {"rank": i + 1, "username": user.username, "score": int(user.score)}
         for i, user in enumerate(sorted_users[:10])
     ]
-
+    result.insert(0, balbes)
     return result
 
 
