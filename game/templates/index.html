@@ -251,12 +251,12 @@
             <span id="score">0</span>
             <img class="icon" src="static/bin.png" alt="Блин">
         </div>
-        <a href="https://education-marathon.ddns.net//settings" class="settings"></a>
+        <a href="https://education-marathon.ddns.net/settings" class="settings"></a>
     </div>
 
     <div id="dummy"></div>
 
-    <button id="leaderboard-button" onclick="window.location.href='https://education-marathon.ddns.net//leaderboard'">
+    <button id="leaderboard-button" onclick="window.location.href='https://education-marathon.ddns.net/leaderboard'">
         <img src="static/prize.png" alt="Приз">
         Рейтинг
     </button>
@@ -314,7 +314,7 @@
 
         
         function createUser(username) {
-            fetch(`https://education-marathon.ddns.net//api/users`, {
+            fetch(`https://education-marathon.ddns.net/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -337,7 +337,7 @@
 
         
         function fetchScore(username) {
-            fetch(`https://education-marathon.ddns.net//api/users/${username}`, {
+            fetch(`https://education-marathon.ddns.net/api/users/${username}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -374,7 +374,7 @@
 
         function updateScoreOnServer() {
             if (score !== lastSentScore) {
-                fetch(`https://education-marathon.ddns.net//api/users/${username}`, {
+                fetch(`https://education-marathon.ddns.net/api/users/${username}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
