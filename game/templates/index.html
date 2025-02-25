@@ -233,6 +233,25 @@
             text-decoration: underline;
         }
 
+        .countdown {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 360px;
+            padding: 8px;
+            background: #f4c06a;
+            border: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            position: fixed;
+            top: 60px;
+            z-index: 10;
+            font-size: 18px;
+            color: #462706;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -246,6 +265,10 @@
             <img class="icon" src="static/bin.png" alt="Блин">
         </div>
         <a href="https://education-marathon.ddns.net/settings" class="settings"></a>
+    </div>
+
+    <div class="countdown">
+        До окончания осталось: <span id="countdown-timer"></span>
     </div>
 
     <div id="dummy"></div>
@@ -434,6 +457,27 @@
                 }, 1000);
             }
         }
+
+        function updateCountdown() {
+            const targetDate = new Date("2025-02-26T14:00:00").getTime();
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+            
+            if (timeLeft <= 0) {
+                document.getElementById("countdown-timer").innerText = "Время вышло!";
+                return;
+            }
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            document.getElementById("countdown-timer").innerText = `${days}д ${hours}ч ${minutes}м ${seconds}с`;
+        }
+        
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
     </script>
 
 </body>

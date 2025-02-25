@@ -8,6 +8,12 @@ class User(BaseModel):
     score: int
 
 
+class UserAll(BaseModel):
+    id: int
+    username: str
+    score: int
+
+
 class Score(BaseModel):
     score: int
 
@@ -63,7 +69,16 @@ async def delete_user(username: str):
     raise HTTPException(status_code=404, detail='Пользователь не найден')
 
 
-@router.get('/users')
+@router.get('/users', response_class=UserAll)
 async def get_users():
     users = UserModel.select()
     return [{'username': user.username, 'score': user.score} for user in users]
+
+
+@router.patch('/users/{username}')
+async def update_user_score(username: str, score: Score):
+    if UserModel.select().where(UserModel.username == username).exists():
+        UserModel.update(username=username, score=score.score).where(
+            UserModel.username == username).execute()
+        return {'username': username, 'score': score.score}
+    raise HTTPException(status_code=404, detail='Пользователь не найден')
