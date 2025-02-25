@@ -77,7 +77,10 @@ async def delete_user(username: str):
 @router.get('/users')
 async def get_users() -> list[UserAll]:
     users = UserModel.select()
-    return [{'username': user.username, 'score': user.score} for user in users]
+    return [
+        {'id': user.id, 'username': user.username, 'score': user.score}
+        for user in users
+    ]
 
 
 @router.patch('/users/{username}')
