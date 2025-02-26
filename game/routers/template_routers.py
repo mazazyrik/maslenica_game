@@ -7,9 +7,14 @@ router = APIRouter()
 templates = Jinja2Templates(directory='templates')
 
 
+# @router.get('/', response_class=HTMLResponse)
+# async def index(request: Request):
+#     return templates.TemplateResponse('index.html', {'request': request})
+
+
 @router.get('/', response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse('index.html', {'request': request})
+async def final(request: Request):
+    return templates.TemplateResponse('final.html', {'request': request})
 
 
 @router.get('/leaderboard', response_class=HTMLResponse)

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рейтинг пользователей</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @font-face {
+            font-family: 'HomeVideoFont';
+            src: url('static/HomeVideo-Regular.otf') format('otf'), url('static/HomeVideo-Regular.otf') format('otf');
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            font-family: 'PixelFont', sans-serif;
+            color: #3a1e08;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            background: #f9e4a5;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 360px;
+            padding: 8px;
+            background: #f4c06a;
+            border: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            position: fixed;
+            top: 0;
+            z-index: 10;
+            padding-top: 16px;
+        }
+
+        .back-button {
+            width: 36px;
+            height: 36px;
+            background: url('static/back.png') no-repeat center/contain;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+            cursor: pointer;
+            position: absolute;
+            left: 8px;
+        }
+
+        .pancake-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            margin-left: 44px;
+        }
+
+        .settings {
+            width: 36px;
+            height: 36px;
+            background: url('static/settings.png') no-repeat center/contain;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+            cursor: pointer;
+            position: absolute;
+            right: 8px;
+        }
+
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 10px;
+            width: 100%;
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+            margin-top: 60px;
+        }
+
+        .leaderboard-item {
+            background-color: #f4c06a;
+            border: 2px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            width: 90%;
+            max-width: 360px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 18px;
+            color: #462706;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item a {
+            color: #462706;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .leaderboard-item.new-user {
+            animation: pulse 2s ease-in-out 2, pause 5s ease-in-out forwards;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.05);
+            }
+            50% {
+                transform: scale(1);
+            }
+            75% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pause {
+            0% {
+                animation-play-state: paused;
+            }
+            100% {
+                animation-play-state: running;
+            }
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4c06a;
+            color: #462706;
+            padding: 16px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 5px solid #a05a2c;
+            box-shadow: inset 0px 0px 0px 5px #f7e1a1, 4px 4px 0px #5a2d16;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .footer span, .footer a {
+            margin: 0 10px;
+        }
+
+        .separator {
+            margin: 0 10px;
+            font-size: 24px;
+            color: #462706;
+        }
+
+        .footer a {
+            color: #462706;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="pancake-score">
+            <span>РЕЙТИНГ</span>
+        </div>
+    </div>
+
+    <div class="leaderboard" id="leaderboard"></div>
+
+    <div class="footer">
+        <a href="https://github.com/mazazyrik/maslenica_game">BLBS CREW 2025 </a>
+        <span class="separator">|</span>
+        <a href="https://cs6.pikabu.ru/post_img/2014/10/19/5/1413698873_835712721.jpg">Утконос</a>
+    </div>
+
+    <script>
+        const leaderboardElement = document.getElementById('leaderboard');
+
+        function fetchTopUsers() {
+            fetch('https://education-marathon.ddns.net/api/users/top')
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        displayLeaderboard(data);
+                    } else {
+                        console.error('Неверный формат данных');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при получении данных с сервера:', error);
+                });
+        }
+
+        function displayLeaderboard(users) {
+            leaderboardElement.innerHTML = ''; 
+
+            users.forEach((user, index) => {
+                const userItem = document.createElement('div');
+                userItem.classList.add('leaderboard-item');
+                
+                if (index === 0) {
+                    userItem.classList.add('new-user');
+                }
+
+                userItem.innerHTML = `
+                    <span>${index}. <a href="https://t.me/${user.username}" target="_blank">${user.username}</a></span>
+                    <div>Счет: ${user.score}</div>
+                `;
+
+                leaderboardElement.appendChild(userItem);
+            });
+        }
+
+        fetchTopUsers();
+    </script>
+
+</body>
+</html>
